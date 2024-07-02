@@ -1,0 +1,114 @@
+use crate::error::Error;
+use std::str::FromStr;
+
+/// Describe a rank (row) on a chess board
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Debug, Hash)]
+#[repr(u8)]
+pub enum Rank {
+    First = 0,
+    Second = 1,
+    Third = 2,
+    Fourth = 3,
+    Fifth = 4,
+    Sixth = 5,
+    Seventh = 6,
+    Eighth = 7,
+    Ninth = 8,
+    Tenth = 9,
+    Eleventh = 10,
+    Twelth = 11,
+    Thirteenth = 12,
+    Fourteenth = 13,
+    Fifteenth = 14,
+    Sixteenth = 15,
+}
+
+/// How many ranks are there?
+pub const NUM_RANKS: usize = 16;
+
+/// Enumerate all ranks
+pub const ALL_RANKS: [Rank; NUM_RANKS] = [
+    Rank::First,
+    Rank::Second,
+    Rank::Third,
+    Rank::Fourth,
+    Rank::Fifth,
+    Rank::Sixth,
+    Rank::Seventh,
+    Rank::Eighth,
+    Rank::Ninth,
+    Rank::Tenth,
+    Rank::Eleventh,
+    Rank::Twelth,
+    Rank::Thirteenth,
+    Rank::Fourteenth,
+    Rank::Fifteenth,
+    Rank::Sixteenth,
+];
+
+impl Rank {
+    /// Convert a `usize` into a `Rank` (the inverse of to_index).  If the number is > 7, wrap
+    /// around.
+    #[inline]
+    pub fn from_index(i: usize) -> Rank {
+        // match is optimized to no-op with opt-level=1 with rustc 1.53.0
+        match i & 15 {
+            0 => Rank::First,
+            1 => Rank::Second,
+            2 => Rank::Third,
+            3 => Rank::Fourth,
+            4 => Rank::Fifth,
+            5 => Rank::Sixth,
+            6 => Rank::Seventh,
+            7 => Rank::Eighth,
+            8 => Rank::Ninth,
+            9 => Rank::Tenth,
+            10 => Rank::Eleventh,
+            11 => Rank::Twelth,
+            12 => Rank::Thirteenth,
+            13 => Rank::Fourteenth,
+            14 => Rank::Fifteenth,
+            15 => Rank::Sixteenth,
+            _ => unreachable!(),
+        }
+    }
+
+    /// Go one rank down.  If impossible, wrap around.
+    #[inline]
+    pub fn down_wrap(&self) -> Rank {
+        Rank::from_index(self.to_index().wrapping_sub(1))
+    }
+
+    /// Go one rank up.  If impossible, wrap around.
+    #[inline]
+    pub fn up_wrap(&self) -> Rank {
+        Rank::from_index(self.to_index() + 1)
+    }
+
+    /// Convert this `Rank` into a `usize` between 0 and 7 (inclusive).
+    #[inline]
+    pub fn to_index(&self) -> usize {
+        *self as usize
+    }
+}
+
+impl FromStr for Rank {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.len() < 1 {
+            return Err(Error::InvalidRank);
+        }
+        match s.chars().next().unwrap() {
+            '1' => Ok(Rank::First),
+            '2' => Ok(Rank::Second),
+            '3' => Ok(Rank::Third),
+            '4' => Ok(Rank::Fourth),
+            '5' => Ok(Rank::Fifth),
+            '6' => Ok(Rank::Sixth),
+            '7' => Ok(Rank::Seventh),
+            '8' => Ok(Rank::Eighth),
+            _ => Err(Error::InvalidRank),
+        }
+    }
+}
