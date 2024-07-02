@@ -251,13 +251,13 @@ impl fmt::Display for BitBoard {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut s: String = "".to_owned();
-        for x in 0..64 {
+        for x in (0..64).rev() {
             if self.0 & (1u128 << x) == (1u128 << x) {
                 s.push_str("X ");
             } else {
                 s.push_str(". ");
             }
-            if x % 8 == 7 {
+            if x % 8 == 0 {
                 s.push_str("\n");
             }
         }
@@ -271,7 +271,8 @@ impl BitBoard {
     pub const FAR_EAST: Self = Self(0x80808080808080808080808080808080);
     pub const FAR_WEST: Self = Self(0x01010101010101010101010101010101);
 
-    pub const STANDARD: Self = Self(0x0000000000000000ffffffffffffffff);
+    pub const STANDARD_MASK: Self = Self(0x0000000000000000ffffffffffffffff);
+    pub const EMPTY: Self = Self(0);
 
     /// Construct a new bitboard from a u64
     #[inline]
@@ -350,6 +351,26 @@ pub mod test {
     use rank::ALL_RANKS;
 
     use super::*;
+
+    impl BitBoard {
+        pub fn from_standard(board: &str) -> Self {
+            let mut pos = 1u128 << 63;
+            let mut bits = 0u128;
+            for c in board.chars() {
+                let shift = match c {
+                    '.' => 1,
+                    'T' | 'X' | 'x' => {
+                        bits += pos;
+                        1
+                    }
+                    _ => 0,
+                };
+                pos = pos >> shift;
+            }
+
+            BitBoard(bits)
+        }
+    }
 
     #[test]
     fn test_square_round_trip() {
