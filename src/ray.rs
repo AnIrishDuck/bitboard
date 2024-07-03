@@ -85,14 +85,9 @@ impl Ray {
         flood | self.step_mask(&mut sliders, nowrap, empty)
     }
 
-    pub fn moves_with_capture(
-        self,
-        sliders: BitBoard,
-        empty: BitBoard,
-        others: BitBoard,
-    ) -> BitBoard {
+    pub fn slides(self, sliders: BitBoard, empty: BitBoard, targets: BitBoard) -> BitBoard {
         let mut quiet = self.dumb7(sliders, empty);
-        quiet | self.step_mask(&mut quiet, !self.wraps(), others)
+        quiet | self.step_mask(&mut quiet, !self.wraps(), targets)
     }
 }
 
@@ -193,10 +188,23 @@ pub mod test {
             . . . x . . x .
             . . . . . . . .
             . . x . . . . .
-            x x x T . . x .
+            x x x Q . . x .
             . . . . . . . .
             . . . . . x . .
             x . . . . . . .
+        "#,
+        );
+
+        let targets = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . x . . . . .
+            . x . . . . x .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
         "#,
         );
 
@@ -205,8 +213,8 @@ pub mod test {
             . . . . . . . .
             . . . . . . . .
             . . . x . x . .
-            . . . x x . . .
-            . . . T x x . .
+            . . x x x . . .
+            . . . Q x x x .
             . . x x x . . .
             . x . x . . . .
             . . . x . . . .
@@ -215,7 +223,7 @@ pub mod test {
 
         let mut filled = start.clone();
         for ray in Ray::ALL_RAYS {
-            filled |= ray.dumb7(start, !occupied);
+            filled |= ray.slides(start, !occupied, targets);
         }
 
         assert_eq!(filled.to_string(), blocked.to_string());
@@ -229,7 +237,7 @@ pub mod test {
             . . . . . . . .
             . . . . . . . .
             . . . . . . . .
-            . . . x . . . .
+            . . . R . . . .
             . . . . . . . .
             . . . . . . . .
             . . . . . . . .
@@ -242,7 +250,7 @@ pub mod test {
             . . . x . . . .
             . . . x . . . .
             . . . x . . . .
-            x x x x x x x x
+            x x x R x x x x
             . . . x . . . .
             . . . x . . . .
             . . . x . . . .
@@ -262,10 +270,23 @@ pub mod test {
             . . . x . . x .
             . . . . . . . .
             . . x . . . . .
-            x x x T . . x .
+            x x x R . . x .
             . . . . . . . .
             . . . . . x . .
             x . . . . . . .
+        "#,
+        );
+
+        let targets = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . x . . . . .
+            . x . . . . x .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
         "#,
         );
 
@@ -275,7 +296,7 @@ pub mod test {
             . . . . . . . .
             . . . x . . . .
             . . . x . . . .
-            . . . T x x . .
+            . . . R x x x .
             . . . x . . . .
             . . . x . . . .
             . . . x . . . .
@@ -284,7 +305,7 @@ pub mod test {
 
         let mut filled = start.clone();
         for ray in Ray::STRAIGHTS {
-            filled |= ray.dumb7(start, !occupied);
+            filled |= ray.slides(start, !occupied, targets);
         }
 
         assert_eq!(filled.to_string(), blocked.to_string());
@@ -298,7 +319,7 @@ pub mod test {
             . . . . . . . .
             . . . . . . . .
             . . . . . . . .
-            . . . x . . . .
+            . . . B . . . .
             . . . . . . . .
             . . . . . . . .
             . . . . . . . .
@@ -311,7 +332,7 @@ pub mod test {
             x . . . . . x .
             . x . . . x . .
             . . x . x . . .
-            . . . x . . . .
+            . . . B . . . .
             . . x . x . . .
             . x . . . x . .
             x . . . . . x .
@@ -331,10 +352,23 @@ pub mod test {
             . . . x . . x .
             . . . . . . . .
             . . x . . . . .
-            x x x T . . x .
+            x x x B . . x .
             . . . . . . . .
             . . . . . x . .
             x . . . . . . .
+        "#,
+        );
+
+        let targets = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . x . . . . .
+            . x . . . . x .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
         "#,
         );
 
@@ -343,8 +377,8 @@ pub mod test {
             . . . . . . . .
             . . . . . . . .
             . . . . . x . .
-            . . . . x . . .
-            . . . T . . . .
+            . . x . x . . .
+            . . . B . . . .
             . . x . x . . .
             . x . . . . . .
             . . . . . . . .
@@ -353,7 +387,7 @@ pub mod test {
 
         let mut filled = start.clone();
         for ray in Ray::DIAGONALS {
-            filled |= ray.dumb7(start, !occupied);
+            filled |= ray.slides(start, !occupied, targets);
         }
 
         assert_eq!(filled.to_string(), blocked.to_string());

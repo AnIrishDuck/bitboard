@@ -359,7 +359,7 @@ pub mod test {
             for c in board.chars() {
                 let shift = match c {
                     '.' => 1,
-                    'T' | 'X' | 'x' => {
+                    'K' | 'Q' | 'R' | 'B' | 'N' | 'T' | 'X' | 'x' => {
                         bits += pos;
                         1
                     }
