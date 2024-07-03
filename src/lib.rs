@@ -343,7 +343,13 @@ impl Iterator for BitBoard {
             Some(result)
         }
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.popcnt() as usize, Some(self.popcnt() as usize))
+    }
 }
+
+impl ExactSizeIterator for BitBoard {}
 
 #[cfg(test)]
 pub mod test {
