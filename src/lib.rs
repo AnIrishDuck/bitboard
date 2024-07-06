@@ -355,12 +355,15 @@ pub mod test {
     use file::ALL_FILES;
     use rank::ALL_RANKS;
 
+    use pretty_assertions::assert_eq;
+
     use super::*;
 
     impl BitBoard {
         pub fn from_standard(board: &str) -> Self {
-            let mut pos = 1u128 << 63;
+            let mut pos = 1u128 << (63 - 7);
             let mut bits = 0u128;
+            let mut ix = 0;
             for c in board.chars() {
                 let shift = match c {
                     '.' => 1,
@@ -370,11 +373,54 @@ pub mod test {
                     }
                     _ => 0,
                 };
-                pos = pos >> shift;
+                pos = pos << shift;
+                ix += shift;
+                if shift > 0 {
+                    if ix > 0 && ix % 8 == 0 {
+                        pos = pos >> 16;
+                    }
+                }
             }
 
             BitBoard(bits)
         }
+    }
+
+    #[test]
+    fn test_strings() {
+        let a1 = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            x . . . . . . .
+        "#,
+        );
+        assert_eq!(
+            a1.to_string(),
+            BitBoard::from_square(Square::A1).to_string()
+        );
+
+        let h8 = BitBoard::from_standard(
+            r#"
+            . . . . . . . x
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+        "#,
+        );
+        assert_eq!(
+            h8.to_string(),
+            BitBoard::from_square(Square::H8).to_string()
+        );
     }
 
     #[test]
