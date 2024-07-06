@@ -68,6 +68,11 @@ impl Square {
         Square((rank.to_index() as u8) << 3 ^ (file.to_index() as u8))
     }
 
+    #[inline]
+    pub fn file_rank(&self) -> (File, Rank) {
+        (self.get_file(), self.get_rank())
+    }
+
     /// Return the rank given this square.
     ///
     /// ```

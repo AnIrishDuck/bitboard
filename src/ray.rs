@@ -60,11 +60,8 @@ impl Ray {
     }
 
     #[inline]
-    pub fn step(self, board: BitBoard) -> BitBoard {
-        let wrap = self.wraps();
-        let stay_if_wrap = board & wrap;
-        let step_if_no_wrap = (board & !wrap).rotate_left(self.shift());
-        step_if_no_wrap | stay_if_wrap
+    pub fn step_empty(self, board: BitBoard) -> BitBoard {
+        self.step(board, !BitBoard::EMPTY, !BitBoard::EMPTY)
     }
 
     #[inline]
@@ -89,6 +86,10 @@ impl Ray {
         let mut quiet = self.dumb7(sliders, empty);
         quiet | self.step_mask(&mut quiet, !self.wraps(), targets)
     }
+
+    pub fn step(self, mut steppers: BitBoard, empty: BitBoard, targets: BitBoard) -> BitBoard {
+        steppers | self.step_mask(&mut steppers, !self.wraps(), empty | targets)
+    }
 }
 
 #[cfg(test)]
@@ -99,15 +100,15 @@ pub mod test {
 
     fn assert_step(from: Square, ray: Ray, to: Square) {
         let start = BitBoard::from_square(from);
-        let actual = ray.step(start);
-        let expected = BitBoard::from_square(to);
+        let actual = ray.step_empty(start);
+        let expected = start | BitBoard::from_square(to);
 
         assert_eq!(actual.to_string(), expected.to_string());
     }
 
     fn assert_no_step(from: Square, ray: Ray) {
         let start = BitBoard::from_square(from);
-        let actual = ray.step(start);
+        let actual = ray.step_empty(start);
         let expected = BitBoard::from_square(from);
 
         assert_eq!(actual.to_string(), expected.to_string());
@@ -145,6 +146,68 @@ pub mod test {
         assert_no_step(Square::G1, Ray::South);
         assert_no_step(Square::A1, Ray::SouthWest);
         assert_no_step(Square::A7, Ray::West);
+    }
+
+    #[test]
+    fn test_king_raycast() {
+        let start = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . K . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+        "#,
+        );
+
+        let occupied = BitBoard::from_standard(
+            r#"
+            . . . x . . . .
+            . . . x . . x .
+            . . . . . . . .
+            . . x . . . . .
+            x x x K . . x .
+            . . . . . . . .
+            . . . . . x . .
+            x . . . . . . .
+        "#,
+        );
+
+        let targets = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . x . . . . .
+            . x . . . . x .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+        "#,
+        );
+
+        let blocked = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . x x x . . .
+            . . . K x . . .
+            . . x x x . . .
+            . . . . . . . .
+            . . . . . . . .
+        "#,
+        );
+
+        let mut filled = start.clone();
+        for ray in Ray::ALL_RAYS {
+            filled |= ray.step(start, !occupied, targets);
+        }
+
+        assert_eq!(filled.to_string(), blocked.to_string());
     }
 
     #[test]

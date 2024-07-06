@@ -31,7 +31,7 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, M
 /// ```
 ///
 #[derive(PartialEq, Eq, PartialOrd, Clone, Copy, Debug, Default, Hash)]
-pub struct BitBoard(u128);
+pub struct BitBoard(pub u128);
 
 // Impl BitAnd
 impl BitAnd for BitBoard {
@@ -250,18 +250,17 @@ impl Not for &BitBoard {
 impl fmt::Display for BitBoard {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut s: String = "".to_owned();
         for x in (0..64).rev() {
             if self.0 & (1u128 << x) == (1u128 << x) {
-                s.push_str("X ");
+                write!(f, "X ")?;
             } else {
-                s.push_str(". ");
+                write!(f, ". ")?;
             }
             if x % 8 == 0 {
-                s.push_str("\n");
+                write!(f, "\n")?;
             }
         }
-        write!(f, "{}", s)
+        Ok(())
     }
 }
 
