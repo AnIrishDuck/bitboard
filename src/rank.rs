@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::{error::Error, BitBoard};
 use std::str::FromStr;
 
 /// Describe a rank (row) on a chess board
@@ -89,6 +89,12 @@ impl Rank {
     #[inline]
     pub fn to_index(&self) -> usize {
         *self as usize
+    }
+
+    /// Converts all squares on this rank into a [BitBoard]
+    #[inline]
+    pub fn bits(&self) -> BitBoard {
+        BitBoard(0xff << self.to_index())
     }
 }
 

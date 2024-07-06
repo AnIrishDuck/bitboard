@@ -5,6 +5,8 @@ pub mod rank;
 pub mod ray;
 pub mod square;
 
+use ray::Ray;
+
 pub use crate::file::File;
 pub use crate::rank::Rank;
 pub use crate::square::*;
@@ -326,6 +328,13 @@ impl BitBoard {
     pub fn to_size(&self, rightshift: u8) -> usize {
         (self.0 >> rightshift) as usize
     }
+
+    #[inline]
+    pub fn shift_to(self, square: Square) -> Self {
+        let (file, rank) = square.file_rank();
+        let shifted = Ray::East.shift_n(self, file.to_index());
+        Ray::North.shift_n(shifted, rank.to_index())
+    }
 }
 
 /// For the `BitBoard`, iterate over every `Square` set.
@@ -433,5 +442,70 @@ pub mod test {
                 assert_eq!(board.next(), None);
             }
         }
+    }
+
+    #[test]
+    fn test_shifting() {
+        let test = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . x x . . . . .
+        "#,
+        );
+
+        let expected = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . x x . . .
+        "#,
+        );
+
+        assert_eq!(test.shift_to(Square::A1).to_string(), test.to_string());
+        assert_eq!(test.shift_to(Square::C1).to_string(), expected.to_string());
+
+        let expected = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . x x . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+        "#,
+        );
+        assert_eq!(test.shift_to(Square::C5).to_string(), expected.to_string());
+
+        let expected = BitBoard::from_standard(
+            r#"
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . .
+            . . . . . . . x
+        "#,
+        );
+
+        assert_eq!(test.shift_to(Square::G1).to_string(), expected.to_string());
+        assert_eq!(
+            test.shift_to(Square::H1).to_string(),
+            BitBoard::EMPTY.to_string()
+        );
     }
 }

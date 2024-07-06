@@ -33,7 +33,7 @@ impl Ray {
         Ray::NorthWest,
     ];
 
-    pub fn shift(&self) -> u32 {
+    pub fn rotation(&self) -> u32 {
         match self {
             Ray::North => 8,
             Ray::NorthEast => 9,
@@ -65,8 +65,31 @@ impl Ray {
     }
 
     #[inline]
+    pub fn shift(self, board: BitBoard) -> BitBoard {
+        (board & !self.wraps()).rotate_left(self.rotation())
+    }
+
+    #[inline]
+    pub fn shift_n(self, board: BitBoard, n: usize) -> BitBoard {
+        let mut result = board;
+        for _ in 0..n {
+            result = self.shift(result);
+        }
+        result
+    }
+
+    #[inline]
+    pub fn step_empty_n(self, board: BitBoard, n: u8) -> BitBoard {
+        let mut result = board;
+        for _ in 0..n {
+            result = self.step(board, !BitBoard::EMPTY, !BitBoard::EMPTY)
+        }
+        result
+    }
+
+    #[inline]
     fn step_mask(self, board: &mut BitBoard, pre: BitBoard, post: BitBoard) -> BitBoard {
-        *board = (*board & pre).rotate_left(self.shift()) & post;
+        *board = (*board & pre).rotate_left(self.rotation()) & post;
         *board
     }
 
