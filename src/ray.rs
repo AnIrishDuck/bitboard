@@ -110,6 +110,10 @@ impl Ray {
         quiet | self.step_mask(&mut quiet, !self.wraps(), targets)
     }
 
+    pub fn move1(self, steppers: &mut BitBoard, empty: BitBoard, targets: BitBoard) -> BitBoard {
+        self.step_mask(steppers, !self.wraps(), empty | targets)
+    }
+
     pub fn step(self, mut steppers: BitBoard, empty: BitBoard, targets: BitBoard) -> BitBoard {
         steppers | self.step_mask(&mut steppers, !self.wraps(), empty | targets)
     }
