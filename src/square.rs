@@ -396,6 +396,23 @@ impl Square {
         Square::from_str(&s).ok()
     }
 
+    pub fn shift_to(self, origin: Square) -> Option<Square> {
+        let (file, rank) = self.file_rank();
+        let (plus_file, plus_rank) = origin.file_rank();
+
+        let next_file = file.to_index() + plus_file.to_index();
+        let next_rank = rank.to_index() + plus_rank.to_index();
+
+        if next_file < 8 && next_rank < 16 {
+            Some(Square::make_square(
+                Rank::from_index(next_rank),
+                File::from_index(next_file),
+            ))
+        } else {
+            None
+        }
+    }
+
     /// The A1 square on the chess board
     ///
     /// ```
