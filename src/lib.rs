@@ -313,8 +313,18 @@ impl BitBoard {
 
     /// Count the number of `Squares` set in this `BitBoard`
     #[inline]
-    pub fn popcnt(&self) -> u32 {
+    pub fn len(&self) -> u32 {
         self.0.count_ones()
+    }
+
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    #[inline]
+    pub fn popcnt(&self) -> u32 {
+        self.len()
     }
 
     /// Reverse this `BitBoard`.  Look at it from the opponents perspective.
