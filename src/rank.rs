@@ -94,7 +94,7 @@ impl Rank {
     /// Converts all squares on this rank into a [BitBoard]
     #[inline]
     pub fn bits(&self) -> BitBoard {
-        BitBoard(0xff << self.to_index())
+        BitBoard(0xff << (self.to_index() * 8))
     }
 }
 
