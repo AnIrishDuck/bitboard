@@ -402,6 +402,12 @@ impl Iterator for BitBoard {
 
 impl ExactSizeIterator for BitBoard {}
 
+impl From<Square> for BitBoard {
+    fn from(value: Square) -> Self {
+        Self::from_square(value)
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use file::ALL_FILES;
