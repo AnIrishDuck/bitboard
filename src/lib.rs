@@ -252,13 +252,13 @@ impl Not for &BitBoard {
 impl fmt::Display for BitBoard {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for x in (0..64).rev() {
-            if self.0 & (1u128 << x) == (1u128 << x) {
-                write!(f, "X ")?;
-            } else {
+        for (ix, square) in BitBoard::display_squares().enumerate() {
+            if (self & BitBoard::from(square)).is_empty() {
                 write!(f, ". ")?;
+            } else {
+                write!(f, "X ")?;
             }
-            if x % 8 == 0 {
+            if ix % 8 == 7 {
                 write!(f, "\n")?;
             }
         }
@@ -335,6 +335,39 @@ impl BitBoard {
         let shifted = Ray::East.shift_n(self, file.to_index());
         Ray::North.shift_n(shifted, rank.to_index())
     }
+
+    pub fn display_squares() -> impl Iterator<Item = Square> {
+        (0..8).rev().flat_map(|rank| {
+            (0..8).map(move |file| {
+                Square::make_square(Rank::from_index(rank), File::from_index(file))
+            })
+        })
+    }
+
+    pub fn from_standard(board: &str) -> Self {
+        let mut pos = 1u128 << (63 - 7);
+        let mut bits = 0u128;
+        let mut ix = 0;
+        for c in board.chars() {
+            let shift = match c {
+                '.' => 1,
+                'K' | 'Q' | 'R' | 'B' | 'N' | 'T' | 'X' | 'x' => {
+                    bits += pos;
+                    1
+                }
+                _ => 0,
+            };
+            pos = pos << shift;
+            ix += shift;
+            if shift > 0 {
+                if ix > 0 && ix % 8 == 0 {
+                    pos = pos >> 16;
+                }
+            }
+        }
+
+        BitBoard(bits)
+    }
 }
 
 /// For the `BitBoard`, iterate over every `Square` set.
@@ -367,33 +400,6 @@ pub mod test {
     use pretty_assertions::assert_eq;
 
     use super::*;
-
-    impl BitBoard {
-        pub fn from_standard(board: &str) -> Self {
-            let mut pos = 1u128 << (63 - 7);
-            let mut bits = 0u128;
-            let mut ix = 0;
-            for c in board.chars() {
-                let shift = match c {
-                    '.' => 1,
-                    'K' | 'Q' | 'R' | 'B' | 'N' | 'T' | 'X' | 'x' => {
-                        bits += pos;
-                        1
-                    }
-                    _ => 0,
-                };
-                pos = pos << shift;
-                ix += shift;
-                if shift > 0 {
-                    if ix > 0 && ix % 8 == 0 {
-                        pos = pos >> 16;
-                    }
-                }
-            }
-
-            BitBoard(bits)
-        }
-    }
 
     #[test]
     fn test_strings() {
