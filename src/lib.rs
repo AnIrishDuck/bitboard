@@ -6,6 +6,7 @@ pub mod ray;
 pub mod square;
 
 use ray::Ray;
+use serde::{Deserialize, Serialize};
 
 pub use crate::file::File;
 pub use crate::rank::Rank;
@@ -32,7 +33,7 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, M
 /// assert_eq!(count, 3);
 /// ```
 ///
-#[derive(PartialEq, Eq, PartialOrd, Clone, Copy, Debug, Default, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Clone, Copy, Debug, Default, Hash, Serialize, Deserialize)]
 pub struct BitBoard(pub u128);
 
 // Impl BitAnd

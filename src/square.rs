@@ -2,11 +2,12 @@ use crate::error::Error;
 use crate::file::File;
 use crate::player::Player;
 use crate::rank::Rank;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 
 /// Represent a square on the chess board
-#[derive(PartialEq, Ord, Eq, PartialOrd, Copy, Clone, Debug, Hash)]
+#[derive(PartialEq, Ord, Eq, PartialOrd, Copy, Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct Square(u8);
 
 /// How many squares are there?

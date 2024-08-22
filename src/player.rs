@@ -1,8 +1,9 @@
 use crate::rank::Rank;
+use serde::{Deserialize, Serialize};
 use std::ops::Not;
 
 /// Represent a player.
-#[derive(PartialOrd, PartialEq, Eq, Copy, Clone, Debug, Hash)]
+#[derive(PartialOrd, PartialEq, Eq, Copy, Clone, Debug, Hash, Serialize, Deserialize)]
 pub enum Player {
     White,
     Black,
