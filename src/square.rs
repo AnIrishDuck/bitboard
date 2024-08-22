@@ -380,6 +380,22 @@ impl Square {
         self.0 as usize
     }
 
+    pub fn distance(&self, other: Square) -> usize {
+        let (self_file, self_rank) = self.file_rank();
+        let (other_file, other_rank) = other.file_rank();
+
+        fn d(a: usize, b: usize) -> usize {
+            if a > b {
+                a - b
+            } else {
+                b - a
+            }
+        }
+
+        d(self_file.to_index(), other_file.to_index())
+            .max(d(self_rank.to_index(), other_rank.to_index()))
+    }
+
     /// Convert a UCI `String` to a square.  If invalid, return `None`
     ///
     /// ```
