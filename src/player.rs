@@ -68,6 +68,13 @@ impl Player {
             Player::Black => Rank::Second,
         }
     }
+
+    pub fn dot(&self) -> &'static str {
+        match self {
+            Player::White => "w",
+            Player::Black => "b",
+        }
+    }
 }
 
 impl Not for Player {
