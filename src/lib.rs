@@ -347,6 +347,11 @@ impl BitBoard {
         Ray::North.shift_n(shifted, rank.to_index())
     }
 
+    #[inline]
+    pub fn contains(self, square: Square) -> bool {
+        !(self & Self::from(square)).is_empty()
+    }
+
     pub fn display_squares() -> impl Iterator<Item = Square> {
         (0..8).rev().flat_map(|rank| {
             (0..8).map(move |file| {
