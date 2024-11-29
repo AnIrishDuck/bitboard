@@ -274,6 +274,7 @@ impl BitBoard {
     pub const FAR_WEST: Self = Self(0x01010101010101010101010101010101);
 
     pub const STANDARD_MASK: Self = Self(0x0000000000000000ffffffffffffffff);
+    pub const FULL: Self = Self(0xffffffffffffffffffffffffffffffff);
     pub const EMPTY: Self = Self(0);
 
     /// Construct a new bitboard from a u64
