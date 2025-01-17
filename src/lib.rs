@@ -415,6 +415,15 @@ impl From<Square> for BitBoard {
     }
 }
 
+/// For the `BitBoard`, iterate over every `Square` set.
+impl FromIterator<Square> for BitBoard {
+    fn from_iter<T: IntoIterator<Item = Square>>(iter: T) -> Self {
+        iter.into_iter().fold(Self::EMPTY, |board, square| {
+            board | BitBoard::from_square(square)
+        })
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use file::ALL_FILES;
