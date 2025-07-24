@@ -2,7 +2,7 @@ use crate::error::Error;
 use crate::file::File;
 use crate::player::Player;
 use crate::rank::Rank;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::str::FromStr;
 
@@ -1126,3 +1126,22 @@ pub const ALL_SQUARES: [Square; 64] = [
     Square(62),
     Square(63),
 ];
+
+impl Serialize for Square {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for Square {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Square::from_str(&s).map_err(serde::de::Error::custom)
+    }
+}

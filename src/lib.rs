@@ -6,7 +6,7 @@ pub mod ray;
 pub mod square;
 
 use ray::Ray;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer, Deserializer};
 
 pub use crate::file::File;
 pub use crate::rank::Rank;
@@ -33,7 +33,7 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, M
 /// assert_eq!(count, 3);
 /// ```
 ///
-#[derive(PartialEq, Eq, PartialOrd, Clone, Copy, Debug, Default, Hash, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, PartialOrd, Clone, Copy, Debug, Default, Hash)]
 pub struct BitBoard(pub u128);
 
 // Impl BitAnd
@@ -424,6 +424,31 @@ impl FromIterator<Square> for BitBoard {
     }
 }
 
+impl Serialize for BitBoard {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeSeq;
+        let squares: Vec<Square> = self.clone().collect();
+        let mut seq = serializer.serialize_seq(Some(squares.len()))?;
+        for square in squares {
+            seq.serialize_element(&square)?;
+        }
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for BitBoard {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let squares: Vec<Square> = Vec::deserialize(deserializer)?;
+        Ok(squares.into_iter().collect::<BitBoard>())
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use file::ALL_FILES;
@@ -545,5 +570,57 @@ pub mod test {
             test.shift_to(Square::H1).to_string(),
             BitBoard::EMPTY.to_string()
         );
+    }
+
+    #[test]
+    fn test_square_serialization() {
+        let sq = Square::make_square(Rank::First, File::A);
+        let serialized = serde_json::to_string(&sq).unwrap();
+        assert_eq!(serialized, "\"a1\"");
+
+        let deserialized: Square = serde_json::from_str("\"a1\"").unwrap();
+        assert_eq!(deserialized, sq);
+
+        let sq2 = Square::make_square(Rank::Eighth, File::H);
+        let serialized2 = serde_json::to_string(&sq2).unwrap();
+        assert_eq!(serialized2, "\"h8\"");
+
+        let deserialized2: Square = serde_json::from_str("\"h8\"").unwrap();
+        assert_eq!(deserialized2, sq2);
+    }
+
+    #[test]
+    fn test_bitboard_serialization() {
+        // Test empty bitboard
+        let empty = BitBoard::EMPTY;
+        let serialized = serde_json::to_string(&empty).unwrap();
+        assert_eq!(serialized, "[]");
+
+        let deserialized: BitBoard = serde_json::from_str("[]").unwrap();
+        assert_eq!(deserialized, empty);
+
+        // Test single square bitboard
+        let single = BitBoard::from_square(Square::make_square(Rank::First, File::A));
+        let serialized = serde_json::to_string(&single).unwrap();
+        assert_eq!(serialized, "[\"a1\"]");
+
+        let deserialized: BitBoard = serde_json::from_str("[\"a1\"]").unwrap();
+        assert_eq!(deserialized, single);
+
+        // Test multiple squares bitboard
+        let multiple = BitBoard::from_square(Square::A1) | BitBoard::from_square(Square::C3) | BitBoard::from_square(Square::H8);
+        let serialized = serde_json::to_string(&multiple).unwrap();
+        // The order might vary, so we check that it contains all squares
+        let squares: Vec<String> = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(squares.len(), 3);
+        assert!(squares.contains(&"a1".to_string()));
+        assert!(squares.contains(&"c3".to_string()));
+        assert!(squares.contains(&"h8".to_string()));
+
+        let deserialized: BitBoard = serde_json::from_str("[\"a1\",\"c3\",\"h8\"]").unwrap();
+        assert_eq!(deserialized.contains(Square::A1), true);
+        assert_eq!(deserialized.contains(Square::C3), true);
+        assert_eq!(deserialized.contains(Square::H8), true);
+        assert_eq!(deserialized.len(), 3);
     }
 }
