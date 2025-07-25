@@ -7,7 +7,7 @@ use std::fmt;
 use std::str::FromStr;
 
 /// Represent a square on the chess board
-#[derive(PartialEq, Ord, Eq, PartialOrd, Copy, Clone, Debug, Hash, Serialize, Deserialize)]
+#[derive(PartialEq, Ord, Eq, PartialOrd, Copy, Clone, Debug, Hash)]
 pub struct Square(pub(crate) u8);
 
 /// How many squares are there?
