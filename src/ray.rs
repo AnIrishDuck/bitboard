@@ -1,4 +1,4 @@
-use crate::BitBoard;
+use crate::{BitBoard, Square};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Ray {
@@ -57,6 +57,25 @@ impl Ray {
             Ray::West => BitBoard::FAR_WEST,
             Ray::NorthWest => BitBoard::FAR_NORTH | BitBoard::FAR_WEST,
         }
+    }
+
+    #[inline]
+    pub fn step_square(self, square: Square) -> Option<Square> {
+        if self.wraps().contains(square) {
+            return None;
+        }
+
+        // Square((rank.to_index() as u8) << 3 ^ (file.to_index() as u8))
+        Some(Square(match self {
+            Ray::North => square.0 + 8,
+            Ray::NorthEast => square.0 + 9,
+            Ray::East => square.0 + 1,
+            Ray::SouthEast => square.0 - 7,
+            Ray::South => square.0 - 8,
+            Ray::SouthWest => square.0 - 9,
+            Ray::West => square.0 - 1,
+            Ray::NorthWest => square.0 + 7,
+        }))
     }
 
     #[inline]
@@ -122,7 +141,7 @@ impl Ray {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::{Rank, Square};
+    use crate::{Rank, Square, ALL_SQUARES};
     use pretty_assertions::assert_eq;
 
     fn assert_step(from: Square, ray: Ray, to: Square) {
@@ -481,5 +500,23 @@ pub mod test {
         }
 
         assert_eq!(filled.to_string(), blocked.to_string());
+    }
+
+    #[test]
+    fn test_step_square() {
+        for square in ALL_SQUARES {
+            let board = BitBoard::from(square);
+
+            for ray in Ray::ALL_RAYS {
+                let step = ray.step(board.clone(), BitBoard::FULL, BitBoard::EMPTY);
+
+                let mut result = board.clone();
+                if let Some(next) = ray.step_square(square) {
+                    result |= BitBoard::from(next);
+                }
+
+                assert_eq!(result, step);
+            }
+        }
     }
 }

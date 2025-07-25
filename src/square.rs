@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 /// Represent a square on the chess board
 #[derive(PartialEq, Ord, Eq, PartialOrd, Copy, Clone, Debug, Hash, Serialize, Deserialize)]
-pub struct Square(u8);
+pub struct Square(pub(crate) u8);
 
 /// How many squares are there?
 pub const NUM_SQUARES: usize = 128;
