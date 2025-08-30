@@ -1013,7 +1013,7 @@ impl fmt::Display for Square {
             f,
             "{}{}",
             (('a' as u8) + ((self.0 & 7) as u8)) as char,
-            (('1' as u8) + ((self.0 >> 3) as u8)) as char
+            ((self.0 >> 3) as u8) + 1
         )
     }
 }
@@ -1032,14 +1032,10 @@ impl FromStr for Square {
                 return Err(Error::InvalidSquare);
             }
         }
-        match ch[1] {
-            '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' => {}
-            _ => {
-                return Err(Error::InvalidSquare);
-            }
-        }
+
+        let rank_ix = s[1..].parse::<usize>().map_err(|_| Error::InvalidSquare)?;
         Ok(Square::make_square(
-            Rank::from_index((ch[1] as usize) - ('1' as usize)),
+            Rank::from_index(rank_ix - 1),
             File::from_index((ch[0] as usize) - ('a' as usize)),
         ))
     }
@@ -1143,5 +1139,23 @@ impl<'de> Deserialize<'de> for Square {
     {
         let s = String::deserialize(deserializer)?;
         Square::from_str(&s).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use crate::BitBoard;
+
+    use super::*;
+
+    #[test]
+    pub fn serde_round() {
+        for square in BitBoard::FULL {
+            dbg!(square, square.to_string());
+            assert_eq!(
+                Square::from_str(square.to_string().as_str()).unwrap(),
+                square
+            );
+        }
     }
 }
